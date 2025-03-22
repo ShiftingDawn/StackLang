@@ -1,52 +1,67 @@
 package com.shiftingdawn.feylon.ins;
 
 import com.shiftingdawn.feylon.Memory;
+import com.shiftingdawn.feylon.MemoryElement;
 import com.shiftingdawn.feylon.Stack;
+import com.shiftingdawn.feylon.StackElement;
+import com.shiftingdawn.feylon.lang.DataType;
 
 import java.util.function.IntConsumer;
 
 public class MemoryInstructions {
 
 	public static void store8(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		final int x = data.pop();
-		memory.set(ptr, (byte) x);
+		final StackElement ptr = data.pop();
+		final StackElement x = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		Instruction.assertType(x, DataType.INT);
+		memory.set(ptr.value(), (byte) x.value(), DataType.INT);
 	}
 
 	public static void store16(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		final int x = data.pop();
-		memory.set(ptr, (byte) x);
-		memory.set(ptr + 1, (byte) (x >> 8));
+		final StackElement ptr = data.pop();
+		final StackElement x = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		Instruction.assertType(x, DataType.INT);
+		memory.set(ptr.value(), (byte) x.value(), DataType.INT);
+		memory.set(ptr.value() + 1, (byte) (x.value() >> 8), DataType.INT);
 	}
 
 	public static void store32(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		final int x = data.pop();
-		memory.set(ptr, (byte) x);
-		memory.set(ptr + 1, (byte) (x >> 8));
-		memory.set(ptr + 2, (byte) (x >> 16));
-		memory.set(ptr + 3, (byte) (x >> 25));
+		final StackElement ptr = data.pop();
+		final StackElement x = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		Instruction.assertType(x, DataType.INT);
+		memory.set(ptr.value(), (byte) x.value(), DataType.INT);
+		memory.set(ptr.value() + 1, (byte) (x.value() >> 8), DataType.INT);
+		memory.set(ptr.value() + 2, (byte) (x.value() >> 16), DataType.INT);
+		memory.set(ptr.value() + 3, (byte) (x.value() >> 25), DataType.INT);
 	}
 
 	public static void load8(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		data.push(memory.get(ptr));
+		final StackElement ptr = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		final MemoryElement x = memory.get(ptr.value());
+		data.push(x.value(), x.type());
 	}
 
 	public static void load16(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		int x = memory.get(ptr) & 0xFF;
-		x |= (memory.get(ptr + 1) & 0xFF) << 8;
-		data.push(x);
+		final StackElement ptr = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		final MemoryElement elem = memory.get(ptr.value());
+		int x = memory.get(ptr.value()).value() & 0xFF;
+		x |= (memory.get(ptr.value() + 1).value() & 0xFF) << 8;
+		data.push(x, elem.type());
 	}
 
 	public static void load32(final IntConsumer jump, final Stack data, final Stack returnStack, final Memory memory) {
-		final int ptr = data.pop();
-		int x = memory.get(ptr) & 0xFF;
-		x |= (memory.get(ptr + 1) & 0xFF) << 8;
-		x |= (memory.get(ptr + 2) & 0xFF) << 16;
-		x |= (memory.get(ptr + 3) & 0xFF) << 24;
-		data.push(x);
+		final StackElement ptr = data.pop();
+		Instruction.assertType(ptr, DataType.POINTER);
+		final MemoryElement elem = memory.get(ptr.value());
+		int x = elem.value() & 0xFF;
+		x |= (memory.get(ptr.value() + 1).value() & 0xFF) << 8;
+		x |= (memory.get(ptr.value() + 2).value() & 0xFF) << 16;
+		x |= (memory.get(ptr.value() + 3).value() & 0xFF) << 24;
+		data.push(x, elem.type());
 	}
 }

@@ -1,5 +1,6 @@
 package com.shiftingdawn.feylon.tests;
 
+import com.shiftingdawn.feylon.lang.DataType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,13 +36,13 @@ public class FunctionTests extends AbstractTestHost {
 	@Test
 	public void testWithOutputs() {
 		this.run("function test(-> int) 1 end test", 1);
-		this.assertStack(1);
+		this.assertStack(1, DataType.INT);
 	}
 
 	@Test
 	public void testWithIO() {
 		this.run("function test(int int -> int) + end 3 2 test", 1);
-		this.assertStack(5);
+		this.assertStack(5, DataType.INT);
 	}
 
 	@Test

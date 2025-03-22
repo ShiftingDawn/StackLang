@@ -1,13 +1,7 @@
 package com.shiftingdawn.feylon.tests;
 
-import com.shiftingdawn.feylon.Memory;
-import com.shiftingdawn.feylon.Simulator;
-import com.shiftingdawn.feylon.Stack;
-import com.shiftingdawn.feylon.StackUnderflowError;
-import com.shiftingdawn.feylon.lang.AssembledProgram;
-import com.shiftingdawn.feylon.lang.Feylon;
-import com.shiftingdawn.feylon.lang.FeylonException;
-import com.shiftingdawn.feylon.lang.ResolvedSources;
+import com.shiftingdawn.feylon.*;
+import com.shiftingdawn.feylon.lang.*;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
@@ -26,8 +20,8 @@ public abstract class AbstractTestHost {
 		new Simulator(this.dataStack, this.returnStack, this.memory, program).execute();
 	}
 
-	public void assertStack(final int value) {
-		Assertions.assertEquals(value, this.dataStack.pop());
+	public void assertStack(final int value, final DataType type) {
+		Assertions.assertEquals(new StackElement(value, type), this.dataStack.pop());
 	}
 
 	public void assertReturnTo(final int value) {

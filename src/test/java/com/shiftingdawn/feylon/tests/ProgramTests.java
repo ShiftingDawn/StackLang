@@ -44,7 +44,7 @@ public class ProgramTests {
 		System.setOut(new PrintStream(boas, true));
 		try {
 			final AssembledProgram program = Feylon.parse(sources, 0);
-			new Simulator(program).execute();
+			Assertions.assertDoesNotThrow(() -> new Simulator(program).execute());
 		} catch (final FeylonException ex) {
 			ex.printStackTrace();
 			throw ex;

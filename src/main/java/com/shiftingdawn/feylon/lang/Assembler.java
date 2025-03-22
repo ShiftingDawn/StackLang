@@ -13,9 +13,9 @@ final class Assembler {
 			final LinkedToken token = tokens.pop();
 			switch (token.type) {
 				case PUSH_INT -> ctx.result.append(StackInstructions.push((int) token.data));
-				case PUSH_BOOL -> ctx.result.append(StackInstructions.push((boolean) token.data ? 1 : 0));
+				case PUSH_BOOL -> ctx.result.append(StackInstructions.push((boolean) token.data));
 				case PUSH_STRING -> ctx.result.append(StackInstructions.push((String) token.data));
-				case PUSH_POINTER -> ctx.result.append(StackInstructions.push((int) token.data));
+				case PUSH_POINTER -> ctx.result.append(StackInstructions.pushPtr((int) token.data));
 				case INTRINSIC -> Assembler.processIntrinsic(ctx, token);
 
 				case FUNCTION -> ctx.result.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset));

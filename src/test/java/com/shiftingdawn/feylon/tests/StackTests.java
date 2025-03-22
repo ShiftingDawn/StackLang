@@ -1,7 +1,9 @@
 package com.shiftingdawn.feylon.tests;
 
 import com.shiftingdawn.feylon.Stack;
+import com.shiftingdawn.feylon.StackElement;
 import com.shiftingdawn.feylon.StackUnderflowError;
+import com.shiftingdawn.feylon.lang.DataType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,72 +16,58 @@ import static org.junit.jupiter.api.Assertions.*;
 public class StackTests {
 
 	private Stack stack;
-	private Supplier<int[]> array;
+	private Supplier<StackElement[]> array;
 	private IntSupplier pointer;
 
 	@Test
 	public void testInit() {
-		assertArrayEquals(new int[Stack.DEFAULT_STACK_SIZE], this.array.get());
+		assertArrayEquals(new StackElement[Stack.DEFAULT_STACK_SIZE], this.array.get());
 		assertEquals(-1, this.pointer.getAsInt());
 	}
 
 	@Test
 	public void testPush() {
-		this.stack.push(1);
-		assertEquals(1, this.array.get()[0]);
+		this.stack.push(1, DataType.INT);
+		assertEquals(new StackElement(1, DataType.INT), this.array.get()[0]);
 		assertEquals(0, this.pointer.getAsInt());
 	}
 
 	@Test
 	public void testPush2() {
-		this.stack.push(1);
-		assertEquals(1, this.array.get()[0]);
+		this.stack.push(1, DataType.INT);
+		assertEquals(new StackElement(1, DataType.INT), this.array.get()[0]);
 		assertEquals(0, this.pointer.getAsInt());
-		this.stack.push(2);
-		assertEquals(2, this.array.get()[1]);
+		this.stack.push(2, DataType.INT);
+		assertEquals(new StackElement(2, DataType.INT), this.array.get()[1]);
 		assertEquals(1, this.pointer.getAsInt());
 	}
 
 	@Test
-	public void testPushByte() {
-		this.stack.push((byte) 1);
-		assertEquals(1, this.array.get()[0]);
-		assertEquals(0, this.pointer.getAsInt());
-	}
-
-	@Test
-	public void testPushShort() {
-		this.stack.push((short) 1);
-		assertEquals(1, this.array.get()[0]);
-		assertEquals(0, this.pointer.getAsInt());
-	}
-
-	@Test
 	public void testPushBoolean() {
-		this.stack.push(false);
-		assertEquals(0, this.array.get()[0]);
+		this.stack.push(0, DataType.BOOL);
+		assertEquals(new StackElement(0, DataType.BOOL), this.array.get()[0]);
 		assertEquals(0, this.pointer.getAsInt());
-		this.stack.push(true);
-		assertEquals(1, this.array.get()[1]);
+		this.stack.push(1, DataType.BOOL);
+		assertEquals(new StackElement(1, DataType.BOOL), this.array.get()[1]);
 		assertEquals(1, this.pointer.getAsInt());
 	}
 
 	@Test
 	public void testPushResize() {
 		for (int i = 0; i < Stack.DEFAULT_STACK_SIZE - 1; ++i) {
-			this.stack.push(1);
+			this.stack.push(1, DataType.INT);
 		}
 		assertEquals(Stack.DEFAULT_STACK_SIZE, this.array.get().length);
-		this.stack.push(1);
+		this.stack.push(1, DataType.INT);
 		assertEquals(Stack.DEFAULT_STACK_SIZE, this.array.get().length);
-		this.stack.push(1);
+		this.stack.push(1, DataType.INT);
 		assertEquals(Stack.DEFAULT_STACK_SIZE * 2, this.array.get().length);
 	}
 
 	@Test
 	public void testPop() {
-		this.stack.push(1);
-		assertEquals(1, this.stack.pop());
+		this.stack.push(1, DataType.INT);
+		assertEquals(new StackElement(1, DataType.INT), this.stack.pop());
 		assertEquals(-1, this.pointer.getAsInt());
 	}
 
@@ -95,7 +83,7 @@ public class StackTests {
 		arrayField.setAccessible(true);
 		this.array = () -> {
 			try {
-				return (int[]) arrayField.get(StackTests.this.stack);
+				return (StackElement[]) arrayField.get(StackTests.this.stack);
 			} catch (final IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}

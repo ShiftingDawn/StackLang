@@ -1,5 +1,7 @@
 package com.shiftingdawn.feylon;
 
+import com.shiftingdawn.feylon.lang.DataType;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -10,14 +12,15 @@ public class Memory {
 	private int nextStringPointer = 0;
 
 	public Memory(final int size) {
-		this.memory = ByteBuffer.allocate(size + Memory.STRING_MEMORY_SIZE);
+		this.memory = ByteBuffer.allocate((size << 1) + Memory.STRING_MEMORY_SIZE);
 	}
 
-	public void set(final int pointer, final byte x) {
+	public void set(final int pointer, final byte x, final DataType type) {
 		if (pointer < 0 || pointer >= this.memory.capacity()) {
 			throw new SegmentationError();
 		}
-		this.memory.put(pointer, x);
+		this.memory.put(pointer << 1, (byte) type.ordinal());
+		this.memory.put((pointer << 1) | 1, x);
 	}
 
 	public int setString(final int pointer, final String str) {
@@ -30,11 +33,13 @@ public class Memory {
 		return bytes.length;
 	}
 
-	public byte get(final int pointer) {
+	public MemoryElement get(final int pointer) {
 		if (pointer < 0 || pointer >= this.memory.capacity()) {
 			throw new SegmentationError();
 		}
-		return this.memory.get(pointer);
+		final byte type = this.memory.get(pointer << 1);
+		final byte value = this.memory.get((pointer << 1) | 1);
+		return new MemoryElement(value, DataType.values()[type]);
 	}
 
 	public String getString(final int pointer, final int size) {

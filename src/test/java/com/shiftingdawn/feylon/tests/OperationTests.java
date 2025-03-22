@@ -1,5 +1,6 @@
 package com.shiftingdawn.feylon.tests;
 
+import com.shiftingdawn.feylon.lang.DataType;
 import org.junit.jupiter.api.Test;
 
 public class OperationTests extends AbstractTestHost {
@@ -9,7 +10,7 @@ public class OperationTests extends AbstractTestHost {
 		this.assertThrows("1 1 + 2 = if 3");
 		this.assertThrows("if 3 end");
 		this.run("1 1 + 2 = if 3 end", 1);
-		this.assertStack(3);
+		this.assertStack(3, DataType.INT);
 		this.run("1 2 + 4 = if 3 end", 1);
 		this.assertStackEmpty();
 	}
@@ -17,14 +18,14 @@ public class OperationTests extends AbstractTestHost {
 	@Test
 	public void testIfElse() {
 		this.run("1 1 + 2 = if 3 else 4 end", 1);
-		this.assertStack(3);
+		this.assertStack(3, DataType.INT);
 		this.run("1 2 + 4 = if 3 else 4 end", 1);
-		this.assertStack(4);
+		this.assertStack(4, DataType.INT);
 	}
 
 	@Test
 	public void testWhile() {
 		this.run("5 while dup 0 > do 1 - end", 1);
-		this.assertStack(0);
+		this.assertStack(0, DataType.INT);
 	}
 }
