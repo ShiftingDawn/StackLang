@@ -12,29 +12,32 @@ final class Assembler {
 		while (!tokens.isEmpty()) {
 			final LinkedToken token = tokens.pop();
 			switch (token.type) {
-				case PUSH_INT -> ctx.result.append(StackInstructions.push((int) token.data));
-				case PUSH_BOOL -> ctx.result.append(StackInstructions.push((boolean) token.data));
-				case PUSH_STRING -> ctx.result.append(StackInstructions.push((String) token.data));
-				case PUSH_POINTER -> ctx.result.append(StackInstructions.pushPtr((int) token.data));
+				case PUSH_INT -> ctx.append(StackInstructions.push((int) token.data), token.pos);
+				case PUSH_BOOL -> ctx.append(StackInstructions.push((boolean) token.data), token.pos);
+				case PUSH_STRING -> ctx.append(StackInstructions.push((String) token.data), token.pos);
+				case PUSH_POINTER -> ctx.append(StackInstructions.pushPtr((int) token.data), token.pos);
 				case INTRINSIC -> Assembler.processIntrinsic(ctx, token);
 
-				case FUNCTION -> ctx.result.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset));
-				case CALL -> ctx.result.append(ControlFlowInstructions.call(linkerContext.functions.get(token.txt).pointer - skippedPointerOffset + 1, (token.selfPointer - skippedPointerOffset) + 1));
-				case RETURN -> ctx.result.append(ControlFlowInstructions::ret);
+				case FUNCTION -> ctx.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset), token.pos);
+				case CALL -> ctx.append(ControlFlowInstructions.call(
+								linkerContext.functions.get(token.txt).pointer - skippedPointerOffset + 1, (token.selfPointer - skippedPointerOffset) + 1),
+						token.pos
+				);
+				case RETURN -> ctx.append(ControlFlowInstructions::ret, token.pos);
 
-				case JUMP -> ctx.result.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset));
-				case JUMP_EQ -> ctx.result.append(ControlFlowInstructions.jumpEq((int) token.data - skippedPointerOffset));
-				case JUMP_NEQ -> ctx.result.append(ControlFlowInstructions.jumpNeq((int) token.data - skippedPointerOffset));
-				case DO -> ctx.result.append(ControlFlowInstructions.jumpNeq((int) token.data - skippedPointerOffset));
+				case JUMP -> ctx.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset), token.pos);
+				case JUMP_EQ -> ctx.append(ControlFlowInstructions.jumpEq((int) token.data - skippedPointerOffset), token.pos);
+				case JUMP_NEQ -> ctx.append(ControlFlowInstructions.jumpNeq((int) token.data - skippedPointerOffset), token.pos);
+				case DO -> ctx.append(ControlFlowInstructions.jumpNeq((int) token.data - skippedPointerOffset), token.pos);
 
 				default -> throw new AssertionError("Encountered unhandled token: " + token.type);
 			}
 		}
-		return new AssembledProgram(ctx.result.toArray(Instruction[]::new), linkerContext.memSize);
+		return ctx.finalizeAssembling(linkerContext.memSize);
 	}
 
 	private static void processIntrinsic(final AssemblerContext ctx, final LinkedToken token) {
-		ctx.result.append(switch ((Intrinsics) token.data) {
+		ctx.append(switch ((Intrinsics) token.data) {
 			case ADD -> (Instruction) ArithmeticInstructions::add;
 			case SUBTRACT -> (Instruction) ArithmeticInstructions::subtract;
 			case MULTIPLY -> (Instruction) ArithmeticInstructions::multiply;
@@ -74,6 +77,6 @@ final class Assembler {
 			case SYSCALL_4 -> (Instruction) SystemInstructions::syscall4;
 			case SYSCALL_5 -> (Instruction) SystemInstructions::syscall5;
 			case SYSCALL_6 -> (Instruction) SystemInstructions::syscall6;
-		});
+		}, token.pos);
 	}
 }

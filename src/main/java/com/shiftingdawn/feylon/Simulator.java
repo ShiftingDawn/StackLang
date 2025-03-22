@@ -28,7 +28,14 @@ public class Simulator {
 			if (instruction == null) {
 				continue;
 			}
-			instruction.apply(this::jump, this.dataStack, this.returnStack, this.memory);
+			try {
+				instruction.apply(this::jump, this.dataStack, this.returnStack, this.memory);
+			} catch (final RuntimeException e) {
+				if (e instanceof final SourcePosAware aware) {
+					aware.setSourcePos(this.program.sourceLocations().get(instruction));
+				}
+				throw e;
+			}
 		}
 	}
 

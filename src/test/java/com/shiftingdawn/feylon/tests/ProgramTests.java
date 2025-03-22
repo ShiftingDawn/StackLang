@@ -2,6 +2,7 @@ package com.shiftingdawn.feylon.tests;
 
 import com.shiftingdawn.feylon.Main;
 import com.shiftingdawn.feylon.Simulator;
+import com.shiftingdawn.feylon.SourcePosAware;
 import com.shiftingdawn.feylon.lang.AssembledProgram;
 import com.shiftingdawn.feylon.lang.Feylon;
 import com.shiftingdawn.feylon.lang.FeylonException;
@@ -44,7 +45,16 @@ public class ProgramTests {
 		System.setOut(new PrintStream(boas, true));
 		try {
 			final AssembledProgram program = Feylon.parse(sources, 0);
-			Assertions.assertDoesNotThrow(() -> new Simulator(program).execute());
+			Assertions.assertDoesNotThrow(() -> {
+				try {
+					new Simulator(program).execute();
+				} catch (final RuntimeException e) {
+					if (e instanceof final SourcePosAware aware) {
+						System.err.println("An error occurred while processing instruction at " + aware.getSourcePos());
+					}
+					throw e;
+				}
+			});
 		} catch (final FeylonException ex) {
 			ex.printStackTrace();
 			throw ex;
