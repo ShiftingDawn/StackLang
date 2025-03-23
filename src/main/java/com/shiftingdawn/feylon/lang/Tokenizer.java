@@ -229,7 +229,7 @@ final class Tokenizer {
 			}
 			nextToken = lexedTokens.pop();
 		}
-		final int id = ctx.currentBlockId; //We already incremented this earlier
+		final int id = ctx.currentBlockId - 1; //We already incremented this earlier
 		ctx.variables.put(id, parts);
 		ctx.variableStack.append(id);
 		return new Token(token.pos(), TokenType.VAR, token.content(), id);
