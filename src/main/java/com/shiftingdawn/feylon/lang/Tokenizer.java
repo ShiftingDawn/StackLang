@@ -60,25 +60,49 @@ final class Tokenizer {
 		if (ctx.memories.containsKey(token.content())) {
 			return new Token(token.pos(), TokenType.MEMORY_REF, token.content(), null);
 		}
+		if (!ctx.variableStack.isEmpty()) {
+			final OrderedList<Integer> next = new OrderedList<>(ctx.variableStack);
+			while (!next.isEmpty()) {
+				final Integer currentId = next.pop();
+				if (ctx.variables.get(currentId).stream().anyMatch(named -> named.name().equals(token.content()))) {
+					return new Token(token.pos(), TokenType.VAR_REF, token.content(), null);
+				}
+			}
+		}
 		throw new FeylonException(token.pos(), "Unknown token: " + token.content());
 	}
 
 	private static Token parseKeyword(final ParserContext ctx, final OrderedList<LexedToken> lexedTokens, final LexedToken token, final Keywords keyword) {
 		return switch (keyword) {
-			case END, ELSEIF -> new Token(token.pos(), TokenType.END, token.content(), null);
-			case FUNCTION -> Tokenizer.parseFunction(ctx, lexedTokens, token);
+			case END, ELSEIF -> {
+				final int lastBlock = ctx.blockStack.pop();
+				if (ctx.variableStack.contains(lastBlock)) {
+					ctx.variableStack.remove((Object) lastBlock);
+				}
+				yield new Token(token.pos(), TokenType.END, token.content(), null);
+			}
+			case FUNCTION -> {
+				ctx.blockStack.append(ctx.currentBlockId++);
+				yield Tokenizer.parseFunction(ctx, lexedTokens, token);
+			}
 			case CONST -> {
 				if (lexedTokens.isEmpty()) {
 					throw new FeylonException(token.pos(), "Encountered incomplete constant");
 				}
+				ctx.blockStack.append(ctx.currentBlockId++);
 				final String constName = lexedTokens.pop().content();
 				ctx.constants.put(constName, null);
 				yield new Token(token.pos(), TokenType.CONST, constName, null);
+			}
+			case VAR -> {
+				ctx.blockStack.append(ctx.currentBlockId++);
+				yield Tokenizer.parseVar(ctx, lexedTokens, token);
 			}
 			case MEMORY -> {
 				if (lexedTokens.isEmpty()) {
 					throw new FeylonException(token.pos(), "Encountered incomplete memory definition");
 				}
+				ctx.blockStack.append(ctx.currentBlockId++);
 				final String memoryName = lexedTokens.pop().content();
 				ctx.memories.put(memoryName, null);
 				yield new Token(token.pos(), TokenType.MEMORY, memoryName, null);
@@ -87,12 +111,14 @@ final class Tokenizer {
 				if (lexedTokens.isEmpty()) {
 					throw new FeylonException(token.pos(), "Encountered incomplete IF statement");
 				}
+				ctx.blockStack.append(ctx.currentBlockId++);
 				yield new Token(token.pos(), TokenType.IF, token.content(), null);
 			}
 			case ELSE -> {
 				if (lexedTokens.isEmpty()) {
 					throw new FeylonException(token.pos(), "Encountered incomplete ELSE statement");
 				}
+				ctx.blockStack.append(ctx.currentBlockId++);
 				yield new Token(token.pos(), TokenType.ELSE, token.content(), null);
 			}
 			case WHILE -> {
@@ -105,9 +131,9 @@ final class Tokenizer {
 				if (lexedTokens.isEmpty()) {
 					throw new FeylonException(token.pos(), "Encountered incomplete DO statement");
 				}
+				ctx.blockStack.append(ctx.currentBlockId++);
 				yield new Token(token.pos(), TokenType.DO, token.content(), null);
 			}
-			default -> throw new AssertionError("Encountered unhandled keyword " + keyword);
 		};
 	}
 
@@ -167,6 +193,46 @@ final class Tokenizer {
 		}
 		ctx.functions.put(funcName.content(), new FunctionSignature(inputs, outputs));
 		return new Token(token.pos(), TokenType.FUNCTION, funcName.content(), null);
+	}
+
+	private static Token parseVar(final ParserContext ctx, final OrderedList<LexedToken> lexedTokens, final LexedToken token) {
+		if (lexedTokens.isEmpty()) {
+			throw new FeylonException(token.pos(), "Missing variable signature");
+		}
+		LexedToken nextToken = lexedTokens.pop();
+		if (nextToken.content().equals("()")) {
+			throw new FeylonException(nextToken.pos(), "Invalid variable signature");
+		}
+		final OrderedList<NamedPos> parts = new OrderedList<>();
+		final char[] buffer = new char[512];
+		int ptr = 0;
+		MainLoop:
+		while (!lexedTokens.isEmpty()) {
+			final String str = nextToken.content();
+			for (int i = 0; i < str.length(); ++i) {
+				final char c = str.charAt(i);
+				if (c == '(' || c == ' ' || c == ')') {
+					if (ptr > 0) {
+						parts.append(new NamedPos(String.valueOf(buffer, 0, ptr), nextToken.pos()));
+						ptr = 0;
+					}
+					if (c == ')') {
+						break MainLoop;
+					}
+				} else {
+					buffer[ptr++] = c;
+				}
+			}
+			if (ptr > 0) {
+				parts.append(new NamedPos(String.valueOf(buffer, 0, ptr), nextToken.pos()));
+				ptr = 0;
+			}
+			nextToken = lexedTokens.pop();
+		}
+		final int id = ctx.currentBlockId; //We already incremented this earlier
+		ctx.variables.put(id, parts);
+		ctx.variableStack.append(id);
+		return new Token(token.pos(), TokenType.VAR, token.content(), id);
 	}
 
 	private static void handleImport(final OrderedList<LexedToken> lexedTokens, final Token token) {

@@ -11,6 +11,8 @@ public enum TokenType {
 	CONST_REF,
 	MEMORY,
 	MEMORY_REF,
+	VAR,
+	VAR_REF,
 
 	FUNCTION,
 	FUNCTION_CALL,

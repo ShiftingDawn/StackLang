@@ -4,9 +4,12 @@ import com.shiftingdawn.feylon.lang.DataType;
 
 public class Stack {
 
-	public static final int DEFAULT_STACK_SIZE = 64;
-	private StackElement[] stack = new StackElement[Stack.DEFAULT_STACK_SIZE];
+	private StackElement[] stack;
 	private int pointer = -1;
+
+	public Stack(final int size) {
+		this.stack = new StackElement[size];
+	}
 
 	private void ensureSize() {
 		if (this.pointer + 1 == this.stack.length) {
@@ -16,9 +19,9 @@ public class Stack {
 		}
 	}
 
-	public void push(final int stackOrPointer, final DataType type) {
+	public void push(final int data, final DataType type) {
 		this.ensureSize();
-		this.stack[++this.pointer] = new StackElement(stackOrPointer, type);
+		this.stack[++this.pointer] = new StackElement(data, type);
 	}
 
 	public StackElement pop() {

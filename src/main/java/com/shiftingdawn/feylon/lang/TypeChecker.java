@@ -11,11 +11,13 @@ final class TypeChecker {
 
 	private static class Context {
 		private OrderedList<TypedPos> stack;
+		private final OrderedList<TypedPos> vars;
 		private int pointer;
 		private final OrderedList<TypedPos> outputs;
 
-		private Context(final OrderedList<TypedPos> stack, final int pointer, final OrderedList<TypedPos> outputs) {
+		private Context(final OrderedList<TypedPos> stack, final OrderedList<TypedPos> vars, final int pointer, final OrderedList<TypedPos> outputs) {
 			this.stack = stack;
+			this.vars = vars;
 			this.pointer = pointer;
 			this.outputs = outputs;
 		}
@@ -29,7 +31,7 @@ final class TypeChecker {
 		final Map<String, Signature> funcSigs = new HashMap<>();
 		linkerContext.functions.forEach((name, func) -> funcSigs.put(name, new Signature(new OrderedList<>(func.inputs), new OrderedList<>(func.outputs))));
 
-		final OrderedList<Context> contexts = new OrderedList<>(List.of(new Context(new OrderedList<>(), 0, new OrderedList<>())));
+		final OrderedList<Context> contexts = new OrderedList<>(List.of(new Context(new OrderedList<>(), new OrderedList<>(), 0, new OrderedList<>())));
 
 		while (!contexts.isEmpty()) {
 			final Context ctx = contexts.getLast();
@@ -77,7 +79,7 @@ final class TypeChecker {
 					if (!(linkedToken.data instanceof final Integer jumpPointer)) {
 						throw new FeylonException(linkedToken.pos, "Missing '%s' statement".formatted(Keywords.END.textValue));
 					}
-					contexts.append(new Context(new OrderedList<>(ctx.stack), jumpPointer, new OrderedList<>()));
+					contexts.append(new Context(new OrderedList<>(ctx.stack), new OrderedList<>(ctx.vars), jumpPointer, new OrderedList<>()));
 				}
 				case DO -> {
 					TypeChecker.checkSignature(linkedToken, ctx, new Signature(List.of(new TypedPos(linkedToken.pos, DataType.BOOL)), List.of()));
@@ -102,7 +104,7 @@ final class TypeChecker {
 					} else {
 						handledLoops.put(ctx.pointer, new OrderedList<>(ctx.stack));
 						++ctx.pointer;
-						contexts.append(new Context(new OrderedList<>(ctx.stack), (int) linkedToken.data, new OrderedList<>(ctx.outputs)));
+						contexts.append(new Context(new OrderedList<>(ctx.stack), new OrderedList<>(ctx.vars), (int) linkedToken.data, new OrderedList<>(ctx.outputs)));
 					}
 				}
 				case INTRINSIC -> {
@@ -244,6 +246,22 @@ final class TypeChecker {
 							TypeChecker.checkSignature(linkedToken, ctx, new Signature(List.of(abcdefn), List.of()));
 						}
 						default -> throw new AssertionError("Encountered unknown intrinsic: " + linkedToken.data);
+					}
+					++ctx.pointer;
+				}
+				case PUSH_VARS -> {
+					for (int i = 0; i < (int) linkedToken.data; ++i) {
+						ctx.vars.append(ctx.stack.pop());
+					}
+					++ctx.pointer;
+				}
+				case APPLY_VAR -> {
+					ctx.stack.append(ctx.vars.get(ctx.vars.size() - 1 - (int) linkedToken.data));
+					++ctx.pointer;
+				}
+				case POP_VARS -> {
+					for (int i = 0; i < (int) linkedToken.data; ++i) {
+						ctx.vars.pop();
 					}
 					++ctx.pointer;
 				}

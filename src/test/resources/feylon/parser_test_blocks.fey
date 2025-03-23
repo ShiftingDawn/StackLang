@@ -1,4 +1,4 @@
-//1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+//1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 500 500 400 300 1 69 69 1
 
 true if
     1 dump
@@ -36,7 +36,7 @@ function test3(-> int)
 end
 test3 dump
 
-function test4(int -> int)
+function test4( int -> int )
     1 +
 end
 10 test4 dump
@@ -56,3 +56,22 @@ end
 2 test5
 3 test5
 4 test5
+
+300 400 500
+var (a)
+  a dump
+  var (b c)
+    a dump
+    c dump
+    b dump
+  end
+end
+
+function test6(int bool)
+  over over dump dump
+  var (a b)
+   a dump
+   b dump
+  end
+end
+69 true test6

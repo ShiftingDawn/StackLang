@@ -15,6 +15,18 @@ final class Lexer {
 			++lineNr;
 			int pos = Lexer.find(line, 0, x -> !Character.isWhitespace(x));
 			while (pos < line.length()) {
+				if (line.charAt(pos) == '\'') {
+					final TokenPos selfPos = new TokenPos(sources.file(), lineNr, pos);
+					final int endPos = Lexer.find(line, pos + 2, x -> x == '\'');
+					if (endPos >= line.length() || (line.charAt(pos + 1) != '\\' && endPos - pos >= 3) || (line.charAt(pos + 1) == '\\' && endPos - pos >= 4)) {
+						throw new FeylonException(selfPos, "Encountered invalid character literal");
+					}
+					final char val = Lexer.unescape(line.substring(pos, endPos)).charAt(0);
+					System.out.println(val);
+					tokens.append(new LexedToken(selfPos, String.valueOf(Character.getNumericValue(val))));
+					pos = Lexer.find(line, endPos + 1, x -> !Character.isWhitespace(x));
+					continue;
+				}
 				if (line.charAt(pos) == '"') {
 					int endPos = Lexer.find(line, pos + 1, x -> x == '"');
 					if (endPos >= line.length()) {
@@ -41,7 +53,11 @@ final class Lexer {
 						continue;
 					}
 				}
-				line = line.split("//")[0];
+				final String[] splitted = line.split("//");
+				if (splitted.length == 0) {
+					break;
+				}
+				line = splitted[0];
 				final int endPos = Lexer.find(line, pos + 1, Character::isWhitespace);
 				if (endPos > line.length()) {
 					break;

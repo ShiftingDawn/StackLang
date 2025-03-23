@@ -7,6 +7,10 @@ public enum InstructionType {
 	PUSH_STRING,
 	PUSH_POINTER,
 
+	PUSH_VARS,
+	POP_VARS,
+	APPLY_VAR,
+
 	INTRINSIC,
 
 	FUNCTION,

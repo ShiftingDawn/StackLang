@@ -48,7 +48,7 @@ public class ProgramTests {
 			Assertions.assertDoesNotThrow(() -> {
 				try {
 					new Simulator(program).execute();
-				} catch (final RuntimeException e) {
+				} catch (final RuntimeException | Error e) {
 					if (e instanceof final SourcePosAware aware) {
 						System.err.println("An error occurred while processing instruction at " + aware.getSourcePos());
 					}

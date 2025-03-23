@@ -3,6 +3,9 @@ package com.shiftingdawn.feylon;
 import com.shiftingdawn.feylon.ins.Instruction;
 import com.shiftingdawn.feylon.lang.AssembledProgram;
 
+import static com.shiftingdawn.feylon.Constants.STACK_SIZE_CALLS;
+import static com.shiftingdawn.feylon.Constants.STACK_SIZE_DATA;
+
 public class Simulator {
 
 	private final Stack dataStack;
@@ -19,7 +22,7 @@ public class Simulator {
 	}
 
 	public Simulator(final AssembledProgram program) {
-		this(new Stack(), new Stack(), new Memory(program.memorySize()), program);
+		this(new Stack(STACK_SIZE_DATA), new Stack(STACK_SIZE_CALLS), new Memory(program.memorySize() << 1), program);
 	}
 
 	public void execute() {
@@ -30,7 +33,7 @@ public class Simulator {
 			}
 			try {
 				instruction.apply(this::jump, this.dataStack, this.returnStack, this.memory);
-			} catch (final RuntimeException e) {
+			} catch (final RuntimeException | Error e) {
 				if (e instanceof final SourcePosAware aware) {
 					aware.setSourcePos(this.program.sourceLocations().get(instruction));
 				}

@@ -12,6 +12,8 @@ final class LinkerContext {
 	public final OrderedList<Token> tokens = new OrderedList<>();
 	public final OrderedList<LinkedToken> result = new OrderedList<>();
 	public final Stack<Integer> callStack = new Stack<>();
+	public final Stack<Integer> varStack = new Stack<>();
+	public final OrderedList<String> varNameStack = new OrderedList<>();
 	int memSize;
 	int pointer = 0;
 

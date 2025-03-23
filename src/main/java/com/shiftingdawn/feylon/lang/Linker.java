@@ -1,5 +1,7 @@
 package com.shiftingdawn.feylon.lang;
 
+import com.shiftingdawn.feylon.OrderedList;
+
 final class Linker {
 
 	public static LinkerContext link(final ParserContext parserContext) {
@@ -18,12 +20,24 @@ final class Linker {
 						default -> throw new AssertionError("Encountered unimplemented datatype '%s' of constant '%s'".formatted(constant.dataType(), token.txt()));
 					});
 				}
+				case VAR -> {
+					ctx.callStack.push(ctx.pointer);
+					final int varStackId = (int) token.data();
+					ctx.varStack.push(varStackId);
+					final OrderedList<NamedPos> vars = parserContext.variables.get(varStackId);
+					vars.forEach(var -> ctx.varNameStack.append(var.name()));
+					ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.PUSH_VARS, token.txt(), vars.size()));
+				}
+				case VAR_REF -> {
+					final int varIndex = ctx.varNameStack.indexOf(token.txt());
+					ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.APPLY_VAR, token.txt(), varIndex));
+				}
 				case MEMORY_REF -> {
 					final MemoryDef memory = parserContext.memories.get(token.txt());
 					ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.PUSH_POINTER, token.txt(), memory.offset));
 				}
 				case INTRINSIC -> ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.INTRINSIC, token.txt(), token.data()));
-				case END -> Linker.processBlock(ctx, token);
+				case END -> Linker.processBlock(parserContext, ctx, token);
 				case FUNCTION -> {
 					ctx.callStack.push(ctx.pointer);
 					ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.FUNCTION, token.txt(), null));
@@ -69,7 +83,7 @@ final class Linker {
 		return ctx;
 	}
 
-	private static void processBlock(final LinkerContext ctx, final Token token) {
+	private static void processBlock(final ParserContext parserContext, final LinkerContext ctx, final Token token) {
 		if (ctx.callStack.isEmpty()) {
 			throw new FeylonException(token.pos(), "Encountered dangling '%s' statement".formatted(TokenType.END));
 		}
@@ -87,6 +101,11 @@ final class Linker {
 			case DO -> {
 				ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.JUMP, token.txt(), reference.data));
 				reference.data = ctx.pointer; //The DO instruction skips the block if on false values.
+			}
+			case PUSH_VARS -> {
+				final OrderedList<NamedPos> vars = parserContext.variables.get(ctx.varStack.pop());
+				ctx.varNameStack.removeIf(str -> vars.stream().anyMatch(var -> str.equals(var.name())));
+				ctx.result.append(new LinkedToken(token.pos(), ctx.pointer++, InstructionType.POP_VARS, token.txt(), reference.data));
 			}
 			default -> throw new FeylonException(token.pos(),
 					"Encountered '%s' statement that references an invalid instruction '%s'. This is a linking error.".formatted(TokenType.END, reference.type));

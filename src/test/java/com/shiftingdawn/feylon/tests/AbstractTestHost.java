@@ -13,9 +13,9 @@ public abstract class AbstractTestHost {
 	protected Memory memory;
 
 	public void run(final String src, final int vars) {
-		this.dataStack = new Stack();
-		this.returnStack = new Stack();
-		this.memory = new Memory(64);
+		this.dataStack = new Stack(Constants.STACK_SIZE_DATA);
+		this.returnStack = new Stack(Constants.STACK_SIZE_CALLS);
+		this.memory = new Memory(64 << 1);
 		final AssembledProgram program = Feylon.parse(new ResolvedSources("<generated>", List.of(src)), vars);
 		new Simulator(this.dataStack, this.returnStack, this.memory, program).execute();
 	}

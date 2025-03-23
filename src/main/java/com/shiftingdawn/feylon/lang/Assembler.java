@@ -18,9 +18,13 @@ final class Assembler {
 				case PUSH_POINTER -> ctx.append(StackInstructions.pushPtr((int) token.data), token.pos);
 				case INTRINSIC -> Assembler.processIntrinsic(ctx, token);
 
+				case PUSH_VARS -> ctx.append(VarInstructions.pushVars((int) token.data), token.pos);
+				case APPLY_VAR -> ctx.append(VarInstructions.applyVar((int) token.data), token.pos);
+				case POP_VARS -> ctx.append(VarInstructions.popVars((int) token.data), token.pos);
+
 				case FUNCTION -> ctx.append(ControlFlowInstructions.jump((int) token.data - skippedPointerOffset), token.pos);
-				case CALL -> ctx.append(ControlFlowInstructions.call(
-								linkerContext.functions.get(token.txt).pointer - skippedPointerOffset + 1, (token.selfPointer - skippedPointerOffset) + 1),
+				case CALL -> ctx.append(
+						ControlFlowInstructions.call(linkerContext.functions.get(token.txt).pointer - skippedPointerOffset + 1, (token.selfPointer - skippedPointerOffset) + 1),
 						token.pos
 				);
 				case RETURN -> ctx.append(ControlFlowInstructions::ret, token.pos);

@@ -1,5 +1,6 @@
 package com.shiftingdawn.feylon.tests;
 
+import com.shiftingdawn.feylon.Constants;
 import com.shiftingdawn.feylon.Stack;
 import com.shiftingdawn.feylon.StackElement;
 import com.shiftingdawn.feylon.StackUnderflowError;
@@ -21,7 +22,7 @@ public class StackTests {
 
 	@Test
 	public void testInit() {
-		assertArrayEquals(new StackElement[Stack.DEFAULT_STACK_SIZE], this.array.get());
+		assertArrayEquals(new StackElement[Constants.STACK_SIZE_DATA], this.array.get());
 		assertEquals(-1, this.pointer.getAsInt());
 	}
 
@@ -54,14 +55,14 @@ public class StackTests {
 
 	@Test
 	public void testPushResize() {
-		for (int i = 0; i < Stack.DEFAULT_STACK_SIZE - 1; ++i) {
+		for (int i = 0; i < Constants.STACK_SIZE_DATA - 1; ++i) {
 			this.stack.push(1, DataType.INT);
 		}
-		assertEquals(Stack.DEFAULT_STACK_SIZE, this.array.get().length);
+		assertEquals(Constants.STACK_SIZE_DATA, this.array.get().length);
 		this.stack.push(1, DataType.INT);
-		assertEquals(Stack.DEFAULT_STACK_SIZE, this.array.get().length);
+		assertEquals(Constants.STACK_SIZE_DATA, this.array.get().length);
 		this.stack.push(1, DataType.INT);
-		assertEquals(Stack.DEFAULT_STACK_SIZE * 2, this.array.get().length);
+		assertEquals(Constants.STACK_SIZE_DATA * 2, this.array.get().length);
 	}
 
 	@Test
@@ -78,7 +79,7 @@ public class StackTests {
 
 	@BeforeEach
 	public void init() throws NoSuchFieldException {
-		this.stack = new Stack();
+		this.stack = new Stack(Constants.STACK_SIZE_DATA);
 		final Field arrayField = Stack.class.getDeclaredField("stack");
 		arrayField.setAccessible(true);
 		this.array = () -> {
