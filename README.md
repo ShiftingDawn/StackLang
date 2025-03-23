@@ -16,34 +16,37 @@ Feylon is currently interpreted in Java, but may be compiled to a native binary 
 
 ## Instructions
 
-| Symbol   | Pops | Pushes | Description                                                                                  | Example                          |
-|----------|------|--------|----------------------------------------------------------------------------------------------|----------------------------------|
-| dup      | 1    | 2      | Duplicates the last item on the stack                                                        | `1 dup` = 1, 1                   |
-| pop      | 1    | 0      | Pops the last item on the stack, effectively removing it                                     | `1 2 pop` = 1                    |
-| swap     | 2    | 2      | Swap the last two items on the stack                                                         | `1 2 swap` = 2, 1                |
-| over     | 2    | 4      | Duplicates the second-last item on the stack and places it at the end of the stack           | `1 2 over` = 1, 2, 1             |
-| rot      | 3    | 3      | Pulls the third last item on the stack to the top                                            | `1 2 3 rot` = 2, 3, 1            |
-| +        | 2    | 1      | Add two numbers and push the result onto the stack                                           | `1 2 +` = 3                      |
-| -        | 2    | 1      | Subtracts two number and push the result onto the stack                                      | `3 1 -` = 2                      |
-| *        | 2    | 1      | Multiply two numbers and push the result onto the stack                                      | `3 2 *` = 6                      |
-| /        | 2    | 1      | Divide two numbers and push the result onto the stack                                        | `10 3 /` = 3                     |
-| %        | 2    | 1      | Divide two numbers and push the remainder onto the stack                                     | `10 3 %` = 1                     |
-| =        | 2    | 1      | Pushes 1 into the stack if the last two numbers are equal, 0 otherwise                       | `2 2 =` = 1, `2 3 =` = 0         |
-| !=       | 2    | 1      | Pushes 1 into the stack if the last two numbers are not equal, 0 otherwise                   | `2 3 !=` = 1, `2 2 !=` = 2       |
-| <        | 2    | 1      | Pushes 1 into the stack if the first number is smaller than the second, 0 otherwise          | `2 3 <` = 1, `3 2 <` = 0         |
-| \>       | 2    | 1      | Pushes 1 into the stack if the first number is larger than the second, 0 otherwise           | `3 2 >` = 1, `2 2 >` = 0         |
-| <=       | 2    | 1      | Pushes 1 into the stack if the first number is smaller or equal than the second, 0 otherwise | `2 3 <=` = 1, `2 3 <=` = 1       |
-| \>=      | 2    | 1      | Pushes 1 into the stack if the first number is larger or equal  than the second, 0 otherwise | `3 2 >=` = 1, `2 2 >=` = 1       |
-| \<<      | 2    | 1      | Shifts the last item on the stack left by the item before that                               | `2 2 <<` = 8                     |
-| \>>      | 2    | 1      | Shifts the last item on the stack right by the item before that                              | `8 1 >>` = 4                     |
-| \&       | 2    | 1      | Performs a bitwise AND on the last two items on the stack                                    | `13 37 &` = 5                    |
-| \|       | 2    | 1      | Performs a bitwise OR on the last two items on the stack                                     | `13 37 \|` = 45                  |
-| \^       | 2    | 1      | Performs a bitwise XOR on the last two items on the stack                                    | `13 37 ^` = 40                   |
-| mem      | 0    | 1      | Pushes a pointer to the start of shared memory onto the stack                                | `mem` = 0xff                     |
-| memset   | 2    | 0      | Pushes the last value on the stack into the pointer before that                              | `mem 10 memset` = \[...,10,...\] |
-| memget   | 1    | 1      | Pushes a value from memory at a popped pointer onto the stack                                | `mem memget` = 10                |
-| dump     | 1    | 0      | Dumps the last item on the stack to STDOUT                                                   | `1 2 + dump` dumps 3 to STDOUT   |
-| syscall3 | 3    | 0      | See the [SysCall](#SysCall) section                                                          | `x y z syscall3`                 |
+| Symbol   | Pops | Pushes | Description                                                                                  | Example                        |
+|----------|------|--------|----------------------------------------------------------------------------------------------|--------------------------------|
+| dup      | 1    | 2      | Duplicates the last item on the stack                                                        | `1 dup` = 1, 1                 |
+| pop      | 1    | 0      | Pops the last item on the stack, effectively removing it                                     | `1 2 pop` = 1                  |
+| swap     | 2    | 2      | Swap the last two items on the stack                                                         | `1 2 swap` = 2, 1              |
+| over     | 2    | 4      | Duplicates the second-last item on the stack and places it at the end of the stack           | `1 2 over` = 1, 2, 1           |
+| rot      | 3    | 3      | Pulls the third last item on the stack to the top                                            | `1 2 3 rot` = 2, 3, 1          |
+| +        | 2    | 1      | Add two numbers and push the result onto the stack                                           | `1 2 +` = 3                    |
+| -        | 2    | 1      | Subtracts two number and push the result onto the stack                                      | `3 1 -` = 2                    |
+| *        | 2    | 1      | Multiply two numbers and push the result onto the stack                                      | `3 2 *` = 6                    |
+| /        | 2    | 1      | Divide two numbers and push the result onto the stack                                        | `10 3 /` = 3                   |
+| %        | 2    | 1      | Divide two numbers and push the remainder onto the stack                                     | `10 3 %` = 1                   |
+| =        | 2    | 1      | Pushes 1 into the stack if the last two numbers are equal, 0 otherwise                       | `2 2 =` = 1, `2 3 =` = 0       |
+| !=       | 2    | 1      | Pushes 1 into the stack if the last two numbers are not equal, 0 otherwise                   | `2 3 !=` = 1, `2 2 !=` = 2     |
+| <        | 2    | 1      | Pushes 1 into the stack if the first number is smaller than the second, 0 otherwise          | `2 3 <` = 1, `3 2 <` = 0       |
+| \>       | 2    | 1      | Pushes 1 into the stack if the first number is larger than the second, 0 otherwise           | `3 2 >` = 1, `2 2 >` = 0       |
+| <=       | 2    | 1      | Pushes 1 into the stack if the first number is smaller or equal than the second, 0 otherwise | `2 3 <=` = 1, `2 3 <=` = 1     |
+| \>=      | 2    | 1      | Pushes 1 into the stack if the first number is larger or equal  than the second, 0 otherwise | `3 2 >=` = 1, `2 2 >=` = 1     |
+| \<<      | 2    | 1      | Shifts the last item on the stack left by the item before that                               | `2 2 <<` = 8                   |
+| \>>      | 2    | 1      | Shifts the last item on the stack right by the item before that                              | `8 1 >>` = 4                   |
+| \&       | 2    | 1      | Performs a bitwise AND on the last two items on the stack                                    | `13 37 &` = 5                  |
+| \|       | 2    | 1      | Performs a bitwise OR on the last two items on the stack                                     | `13 37 \|` = 45                |
+| \^       | 2    | 1      | Performs a bitwise XOR on the last two items on the stack                                    | `13 37 ^` = 40                 |
+| dump     | 1    | 0      | Dumps the last item on the stack to STDOUT                                                   | `1 2 + dump` dumps 3 to STDOUT |
+| syscall0 | 0    | 0      | See the [SysCall](#SysCall) section                                                          | `z syscall0`                   |
+| syscall1 | 1    | 0      | See the [SysCall](#SysCall) section                                                          | `a z syscall1`                 |
+| syscall2 | 3    | 0      | See the [SysCall](#SysCall) section                                                          | `a b z syscall2`               |
+| syscall3 | 3    | 0      | See the [SysCall](#SysCall) section                                                          | `a b c z syscall3`             |
+| syscall4 | 4    | 0      | See the [SysCall](#SysCall) section                                                          | `a b c d z syscall4`           |
+| syscall5 | 5    | 0      | See the [SysCall](#SysCall) section                                                          | `a b c d e z syscall5`         |
+| syscall6 | 6    | 0      | See the [SysCall](#SysCall) section                                                          | `a b c d e f z syscall6`       |
 
 ## The stack
 
@@ -78,20 +81,26 @@ When defining a string, the length of the string and a pointer to the memory add
 
 ## Memory
 
+**Allocating memory**
+
+```forth
+memory <mem_name> <size> end
+```
+
 **Storing data into memory**
 
 ```forth
-mem 10 memset       // Stack: [ *ptr ]             Memory: [ 10 ]
-mem 1 + 20 memset   // Stack: [ *ptr, *ptr ]        Memory: [ 10, 20 ]
-mem 2 + 30 memset   // Stack: [ *ptr, *ptr, *ptr ]   Memory: [ 10, 20, 30 ]
+<value> <mem_name> store   //Store a byte (lowest 8 bits) in <mem_name>
+<value> <mem_name> store16 //Store 2 bytes (lowest 16 bits) in <mem_name>
+<value> <mem_name> store32 //Store an integer (4 bytes) in <mem_name>
 ```
 
 **Loading data from memory**
 
 ```forth
-mem memget          // Stack: [ 10 ]         Memory: [ 10, 20, 30 ]
-mem 1 + memget      // Stack: [ 10, 20 ]     Memory: [ 10, 20, 30 ]
-mem 2 + memget      // Stack: [ 10, 20, 30 ] Memory: [ 10, 20, 30 ]
+<mem_name> load   //Places a byte from <mem_name> on the stack
+<mem_name> load16 //Places a 16-bit number from <mem_name> (as an int) on the stack
+<mem_name> load32 //Places an int from <mem_name> on the stack
 ```
 
 ## Functions
@@ -119,6 +128,28 @@ end
 "This is an error" printE
 ```
 
+## Variables
+
+Working with the stack can sometimes result in code looking like a jungle of keywords like `dup`, `over`, `swap` and `rot`.
+To combat this, data on the stack can be bound to variables.
+
+```forth
+//Stack: [1, 2, 3, 4, 5]
+var (a b c d e)
+  a dump // 1
+  b dump // 2
+  c dump // 3
+  d dump // 4
+  e dump // 5
+  a dump // 1
+  a dump // 1
+end
+```
+
+Variables will be consumed when binding, but can be used multiple times without the need to duplicate them. If you want to retain the variables on the stack, you can simply call them without consuming
+them before the end of the block.
+Variables consume N items from the end of the stack, with N being the number of variable names.
+
 ## Imports
 
 Files can import other files, virtually merging the two files.
@@ -138,6 +169,9 @@ print
 import "math.fey"
 print
 ```
+
+The Java interpreter has a special `class:` prefix to load a file from the Java ClassPath.
+`class:/some/pkg/name/file.fey` will attempt to load the `file.fey` file from the `some.pkg.name` package.
 
 ## SysCall
 
